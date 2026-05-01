@@ -31,10 +31,10 @@ jobs:
               continue
             fi
 
-            current=$(jq -r --arg n "$name" '.[] | select(.InternalName==$n) | .AssemblyVersion' repo.json)
+            current=$(jq -r --arg n "$name" '.[] | select(.InternalName==$n) | .AssemblyVersion' pluginmaster.json)
 
             if [ -z "$current" ]; then
-              echo "WARNING: $name listed in plugins.json but missing from repo.json — skipping"
+              echo "WARNING: $name listed in plugins.json but missing from pluginmaster.json — skipping"
               continue
             fi
 
@@ -43,8 +43,8 @@ jobs:
               echo "Updating $name: $current -> $latest"
               jq --arg n "$name" --arg v "$latest" \
                 '(.[] | select(.InternalName==$n) | .AssemblyVersion) = $v' \
-                repo.json > repo.json.tmp
-              mv repo.json.tmp repo.json
+                pluginmaster.json > pluginmaster.json.tmp
+              mv pluginmaster.json.tmp pluginmaster.json
             else
               echo "$name up to date ($current)"
             fi
@@ -55,13 +55,13 @@ jobs:
               zip_api=$(unzip -p plugin.zip "${name}.json" 2>/dev/null | jq '.DalamudApiLevel // empty' 2>/dev/null || echo "")
               rm -f plugin.zip
               if [ -n "$zip_api" ]; then
-                repo_api=$(jq --arg n "$name" '.[] | select(.InternalName==$n) | .DalamudApiLevel' repo.json)
+                repo_api=$(jq --arg n "$name" '.[] | select(.InternalName==$n) | .DalamudApiLevel' pluginmaster.json)
                 if [ "$zip_api" != "$repo_api" ]; then
                   echo "Updating DalamudApiLevel for $name: $repo_api -> $zip_api"
                   jq --arg n "$name" --argjson v "$zip_api" \
                     '(.[] | select(.InternalName==$n) | .DalamudApiLevel) = $v' \
-                    repo.json > repo.json.tmp
-                  mv repo.json.tmp repo.json
+                    pluginmaster.json > pluginmaster.json.tmp
+                  mv pluginmaster.json.tmp pluginmaster.json
                 fi
               fi
             else
@@ -73,12 +73,12 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          if git diff --quiet repo.json; then
+          if git diff --quiet pluginmaster.json; then
             echo "No changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repo.json
+          git add pluginmaster.json
           git commit -m "Sync plugin versions from upstream releases"
           git push
