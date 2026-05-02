@@ -8,7 +8,7 @@
     "Tags": ["music", "bgm", "audio"],
     "CategoryTags": ["Audio"],
     "InternalName": "orchestrionaria",
-    "AssemblyVersion": "2.2.0.19",
+    "AssemblyVersion": "2.2.0.20",
     "RepoUrl": "https://github.com/AemiliusXIV/OrchestrionPlugin",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
